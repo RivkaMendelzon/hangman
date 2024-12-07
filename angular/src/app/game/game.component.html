@@ -1,0 +1,25 @@
+<div *ngIf="isSession">
+    <h3>Create a Game</h3>
+    <button (click)="createSession()">Create Session</button>
+    <p *ngIf="inviteUrl">Share this URL: {{ inviteUrl }}</p>
+  </div>
+  
+    <div class="game-container">
+      <h1>Hangman</h1>
+      <div class="word">
+        <span >{{ guessedLetters }}</span>
+      </div>
+    
+      <div>
+        <input [(ngModel)]="guessedLetter" maxlength="1" placeholder="Enter a letter" />
+        <button (click)="onGuess()">Guess</button>
+      </div>
+  
+      <div class="message">
+        <span >{{ message }}</span>
+      </div>
+  
+      <p>Guessed letters: {{ incorrectGuesses }}</p>
+      <button (click)="logout()">logout</button>
+    </div>
+    

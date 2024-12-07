@@ -1,0 +1,25 @@
+
+<div>
+    <form (ngSubmit)="startGame($event)" #playerForm="ngForm">
+     <div>
+       <label for="name">Name:</label>
+       <input 
+         type="text" 
+         id="name" 
+         [(ngModel)] = "player.playerName"
+         name="name" 
+         required />
+     </div>
+     <div>
+     <label for="email">Email:</label>
+       <input 
+         type="email" 
+         id="email" 
+         [(ngModel)] = "player.playerEmail"
+ 
+         name="email" 
+         required />
+     </div>
+     <button type="submit" [disabled]="playerForm.invalid">Start Game</button>
+   </form>
+ </div>
