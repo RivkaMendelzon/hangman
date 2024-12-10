@@ -27,10 +27,10 @@ public class GameService {
         Player existPlayer = playerService.findByPlayerEmail(player.getPlayerEmail());
         if(existPlayer != null)
         {            
-            Game game = gameRepository.findByPlayerIdAndIsActiveGame(existPlayer.getPlayerId());
-            if(game != null)
+            Game activeGame = existPlayer.getGames().stream().filter(g -> g.isActiveGame()).findFirst().orElse(null);
+            if(activeGame != null)
             {
-                return game;
+                return activeGame;
             }
         }
         else
@@ -38,24 +38,29 @@ public class GameService {
             existPlayer = playerService.createPlayer(player);
         }
 
-        return startNewGame(existPlayer.getPlayerId());
+        return startNewGame(existPlayer);
     }
 
-    public Game startNewGame(Long playerId)
+    public Game startNewGame(Player player)
     {
         String wordToGuess = randomService.randomWord();
-        return creatGame(wordToGuess, playerId, null);
+        return creatGame(wordToGuess, player, null);
     }
     
-    public void guessJoinedGame(GameSession gameSession, char guess){
-        List<Game> currentGames = gameRepository.findBySessionId(gameSession.getSessionId());
-        if(gameSession.isPlayer1Turn() && gameSession.getPlayer1().getPlayerId().equals(currentGames.get(0).getPlayerId()))
+    public void guessJoinedGame(String gameSessionId, char guess){
+        List<Game> currentGames = gameRepository.findBySessionId(gameSessionId);
+        Game gamePlayerOne = currentGames.get(0);
+        Game gamePlayerTwo = currentGames.get(1);
+
+        GameSession gameSession = new GameSession(gameSessionId, gamePlayerOne.getPlayer(),gamePlayerTwo.getPlayer(),
+        gamePlayerOne.getGuessedWord(), gamePlayerTwo.getGuessedWord(),true);
+        if(gameSession.isPlayer1Turn() && gameSession.getPlayer1().getPlayerId().equals(currentGames.get(0).getPlayer().getPlayerId()))
         {
             guess(currentGames.get(0).getGameId(), guess);
         }
         else 
         {
-            if(!gameSession.isPlayer1Turn() && !gameSession.getPlayer1().getPlayerId().equals(currentGames.get(0).getPlayerId()))
+            if(!gameSession.isPlayer1Turn() && !gameSession.getPlayer1().getPlayerId().equals(currentGames.get(0).getPlayer().getPlayerId()))
                 guess(currentGames.get(0).getGameId(), guess);
             else            
                 guess(currentGames.get(1).getGameId(), guess);
@@ -86,20 +91,20 @@ public class GameService {
             existPlayerOne = playerService.createPlayer(gameSession.getPlayer1());
         if(existPlayerTwo == null)
             existPlayerTwo = playerService.createPlayer(gameSession.getPlayer2());
-        creatGame(gameSession.getPlayer1Word(), existPlayerOne.getPlayerId(), gameSession.getSessionId());
-        creatGame(gameSession.getPlayer1Word(), existPlayerTwo.getPlayerId(), gameSession.getSessionId());
+        creatGame(gameSession.getPlayer1Word(), existPlayerOne, gameSession.getSessionId());
+        creatGame(gameSession.getPlayer1Word(), existPlayerTwo, gameSession.getSessionId());
 
         return " new game created ";
     }
    
-    public Game creatGame(String wordToGuess, Long playerId, String sessionGameId){
+    public Game creatGame(String wordToGuess, Player player, String sessionGameId){
 
         Game newGame = new Game();
         newGame.setWordToGuess(wordToGuess);
         newGame.setGuessedWord("_".repeat(wordToGuess.length()));
         newGame.setIncorrectGuesses("");
         newGame.setActiveGame(true);
-        newGame.setPlayerId(playerId);
+        newGame.setPlayer(player);
         newGame.setSessionId(sessionGameId);
 
         return gameRepository.save(newGame);

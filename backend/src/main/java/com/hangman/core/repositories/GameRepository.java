@@ -14,10 +14,7 @@ public interface GameRepository extends CrudRepository<Game, Long> {
 
     @Query("SELECT g FROM Game g WHERE gameId = :gameId ")
     Game findByGameId(@Param("gameId") Long gameId);
-
-    @Query("SELECT g FROM Game g WHERE activeGame = true AND playerId = :playerId ")
-    Game findByPlayerIdAndIsActiveGame(@Param("playerId") Long playerId);
-
+    
     List<Game> findBySessionId(String sessionId);
 
 }
